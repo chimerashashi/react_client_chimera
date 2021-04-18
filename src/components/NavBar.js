@@ -11,6 +11,8 @@ class NavBar extends React.Component {
         setTimeout(function(){ window.location.reload(false) }, 500);
     }
     render(){
+        // let x1 = (new URLSearchParams(window.location.search)).get("x")
+        // console.log(x1);
         const user = getUser();
         const obj = JSON.parse(user);
         return (

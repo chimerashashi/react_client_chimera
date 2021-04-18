@@ -2,6 +2,7 @@ import React from 'react';
 import {Form,Button,Row,Col} from 'react-bootstrap';
 import axios from 'axios';
 import {browserHistory} from 'react-router';
+import validator from 'validator';
 
 class Register extends React.Component {
   constructor(props){
@@ -12,6 +13,7 @@ class Register extends React.Component {
       email: '',
       phone: '',
       password: '',
+      confirm_password : '',
       invalid_auth : '',
       register_message : '',
       errors: {
@@ -19,13 +21,12 @@ class Register extends React.Component {
         lastName : '',
         email: '',
         phone : '',
-        password : ''
+        password : '',
+        confirm_password : ''
       },
     };
-
   }
   
-
   handleChange = event => {
       const { name, value } = event.target; 
       let errors = this.state.errors;
@@ -34,9 +35,11 @@ class Register extends React.Component {
 
   handleSubmit = event => {
       event.preventDefault();
+      const strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})");
+      const validEmailRegex = 
+           RegExp(/^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i);
       let data = this.state;
       let errors = this.state.errors;
-
       if(data.firstName === ''){
         errors.firstName= 'First Name is required!'
       } else {
@@ -46,7 +49,6 @@ class Register extends React.Component {
            errors.firstName= ''
          }
       }
-
       if(data.lastName === ''){
         errors.lastName = 'Last Name is required!'
       }
@@ -57,36 +59,58 @@ class Register extends React.Component {
           errors.lastName= ''
         }
      }
+
+   
       if(data.email === ''){
         errors.email= 'Email is required!'
-      }  else {
-          errors.email= ''
-      }
+      } else {
+        if(!validEmailRegex.test(data.email)) {
+          errors.email= 'Invalid email'
+        }else {
+          errors.email = '';
+        } 
+      } 
 
       if(data.password === ''){
         errors.password = 'Password is required!'
       }
       else {
-        if(data.password.length < 5 ){
-         errors.password= 'Password should at least 5-charactor long!'
+        if(! strongRegex.test(data.password)) {
+          errors.password= 'The password must contain at least 1 lowercase,at least 1 uppercase,at least 1 numeric character,at least one special character and must be eight characters or longer'
         } else {
           errors.password= ''
         }
      }
       
+     if(data.confirm_password === ''){
+       errors.confirm_password = 'Confirm Password is required!'
+     }
+      else {
+          errors.confirm_password= ''
+      }
+
       if(data.phone === ''){
         errors.phone= 'Phone is required!'
       }
       else {
-        if(data.phone.length < 10 ){
-         errors.phone= 'phone should at least 10-charactor long!'
-        } else {
+        var phoneno = /^\d{10}$/;
+        if(!data.phone.match(phoneno)) {
+          errors.phone= 'phone should integer value & at least 10-charactor long!'
+        }
+        else {
           errors.phone= ''
         }
      }
+
+
+      if (typeof data.password !== "undefined" && typeof data.confirm_password !== "undefined" && data.password!=='' && data.confirm_password!== '') {  
+        if (data.password !== data.confirm_password) {
+            errors.password= 'Password does not match!'
+        }
+      } 
       this.setState({ errors });
       
-      if(this.state.errors.firstName === '' && this.state.errors.firstName === '' && this.state.errors.email === '' && this.state.errors.phone === '' && this.state.errors.password === '') {
+      if(this.state.errors.firstName === '' && this.state.errors.firstName === '' && this.state.errors.email === '' && this.state.errors.phone === '' && this.state.errors.password === '' && this.state.errors.confirm_password) {
           const userObject = {
             firstName: this.state.firstName,
             lastName: this.state.lastName,
@@ -140,7 +164,7 @@ class Register extends React.Component {
               <Row>
                 <Col>
                   <Form.Group controlId="formBasicEmail">
-                  <Form.Control type="email" placeholder="Enter email" name="email" onChange={this.handleChange} />
+                  <Form.Control type="text" placeholder="Enter email" name="email" onChange={this.handleChange} />
                   <Form.Text className="text-muted">
                     We'll never share your email with anyone else.
                     </Form.Text>
@@ -151,6 +175,12 @@ class Register extends React.Component {
                   <Form.Group controlId="formBasicPassword">
                   <Form.Control type="password" placeholder="Password" name="password" onChange={this.handleChange}/>
                   <span className='error' style={{color: "red"}}>{this.state.errors.password}</span>
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId="formBasicPassword">
+                  <Form.Control type="password" placeholder="Confirm Password" name="confirm_password" onChange={this.handleChange}/>
+                  <span className='error' style={{color: "red"}}>{this.state.errors.confirm_password}</span>
                   </Form.Group>
                 </Col>
               </Row>       
